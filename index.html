@@ -47,15 +47,14 @@
 
     /* HERO */
 
-    .hero{
+  .hero{
   position:relative;
   min-height:260px;
   padding:50px;
   display:flex;
   align-items:center;
 
-
-
+  background-image:url('banner.jpg');
   background-repeat:no-repeat;
   background-position:right center;
   background-size:contain;
@@ -226,12 +225,7 @@
   <img id="logo">
 </div>
 
-<script>
-google.script.run.withSuccessHandler(function(base64){
-  document.getElementById("logo").src = base64;
-}).getLogo();
-
-</script>
+<img id="logo" src="logo.png">
 
   <div class="tagline">
     Think Safety. Work Safely.<br>
@@ -259,15 +253,6 @@ google.script.run.withSuccessHandler(function(base64){
   </div>
 
 </div>
-
-<script>
-google.script.run.withSuccessHandler(function(base64){
-
-  document.querySelector(".hero").style.backgroundImage =
-    "url('" + base64 + "')";
-
-}).getBanner();
-</script>
 
 <div class="container">
 
@@ -396,7 +381,7 @@ Unsafe Act / Unsafe Condition *
 <div class="submit-area">
 
 <button type="button"
-onclick="submitReport()">
+onclick="submitForm()"
 
 SUBMIT REPORT
 
@@ -420,15 +405,12 @@ and used for safety improvement purposes only.
 
 <script>
 
-function submitForm() {
-
-  const fileInput = document.getElementById("attachment");
-  const file = fileInput.files[0];
+async function submitForm() {
 
   const data = {
 
     reporterName:
-      document.getElementById("reporterName").value,
+      document.getElementById("reporter").value,
 
     department:
       document.getElementById("department").value,
@@ -446,10 +428,10 @@ function submitForm() {
       document.getElementById("severity").value,
 
     incidentDate:
-      document.getElementById("incidentDate").value,
+      document.getElementById("date").value,
 
     incidentTime:
-      document.getElementById("incidentTime").value,
+      document.getElementById("time").value,
 
     location:
       document.getElementById("location").value,
@@ -458,59 +440,41 @@ function submitForm() {
       document.getElementById("description").value,
 
     actionTaken:
-      document.getElementById("actionTaken").value
+      document.getElementById("action").value
+
   };
 
-  if (file) {
+  try {
 
-    const reader = new FileReader();
+    const response = await fetch(
+      "https://YOUR-WORKER.workers.dev/submit-report",
+      {
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json"
+        },
+        body:JSON.stringify(data)
+      }
+    );
 
-    reader.onload = function(e) {
+    const result = await response.json();
 
-      data.fileName = file.name;
-      data.mimeType = file.type;
-      data.fileData = e.target.result.split(",")[1];
+    alert(
+      "Report Submitted\n\nReference No: " +
+      result.reportNo
+    );
 
-      sendData(data);
+    location.reload();
 
-    };
+  } catch(error) {
 
-    reader.readAsDataURL(file);
-
-  } else {
-
-    sendData(data);
+    alert(
+      "Submission Failed\n\n" +
+      error.message
+    );
 
   }
-}
 
-function sendData(data) {
-
-  google.script.run
-
-    .withSuccessHandler(function(res) {
-
-      alert(
-        "Report Submitted\n\nReference No: " +
-        res.reportNo
-      );
-
-      location.reload();
-
-    })
-
-    .withFailureHandler(function(error) {
-
-      alert(
-        "Submission Failed:\n\n" +
-        error.message
-      );
-
-      console.error(error);
-
-    })
-
-    .submitReport(data);
 }
 
 </script>
