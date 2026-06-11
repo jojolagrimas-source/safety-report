@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Dashboard</title>
+
+  <style>
+    body { font-family: Arial; margin:0; background:#f4f6f9; }
+    header { background:#0d2d6c; color:white; padding:15px; }
+    .container { padding:20px; }
+
+    .cards { display:flex; gap:15px; margin-bottom:20px; }
+
+    .card {
+      background:white;
+      padding:15px;
+      border-radius:8px;
+      flex:1;
+    }
+
+    table {
+      width:100%;
+      border-collapse:collapse;
+      background:white;
+    }
+
+    th, td {
+      border:1px solid #ddd;
+      padding:10px;
+      font-size:13px;
+    }
+
+    th { background:#1f4fa3; color:white; }
+  </style>
+</head>
+
+<body>
+
+<header>Safety Admin Dashboard</header>
+
+<div class="container">
+
+  <div class="cards">
+    <div class="card">
+      <h3>Total Reports</h3>
+      <h2 id="total">0</h2>
+    </div>
+
+    <div class="card">
+      <h3>Critical</h3>
+      <h2 id="critical">0</h2>
+    </div>
+  </div>
+
+  <button onclick="loadData()">Refresh</button>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Report No</th>
+        <th>Date</th>
+        <th>Type</th>
+        <th>Severity</th>
+        <th>Reporter</th>
+        <th>Location</th>
+      </tr>
+    </thead>
+
+    <tbody id="table"></tbody>
+  </table>
+
+</div>
+
+<script>
+
+async function loadData() {
+
+  const res = await fetch("https://safety-api.jojo-lagrimas.workers.dev/reports");
+  const data = await res.json();
+
+  const stats = await fetch("https://safety-api.jojo-lagrimas.workers.dev/stats");
+  const s = await stats.json();
+
+  document.getElementById("total").innerText = s.total;
+  document.getElementById("critical").innerText = s.critical;
+
+  const table = document.getElementById("table");
+  table.innerHTML = "";
+
+  data.data.forEach(r => {
+    table.innerHTML += `
+      <tr>
+        <td>${r.report_no}</td>
+        <td>${r.created_at}</td>
+        <td>${r.report_type}</td>
+        <td>${r.severity}</td>
+        <td>${r.reporter_name}</td>
+        <td>${r.location}</td>
+      </tr>
+    `;
+  });
+}
+
+loadData();
+
+</script>
+
+</body>
+</html>
